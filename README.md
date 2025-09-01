@@ -17,10 +17,19 @@ Each project simulates real-world attack & defense scenarios and focuses on **lo
 
 ---
 
+### ✅ Project 02 - PowerShell Monitoring
+- **Objective**: Simulate suspicious PowerShell activity and detect logs in Event Viewer.  
+- **Skills Gained**:
+  - Understand Event ID **4104 (Script Block Logging)**  
+  - Detect **process creation via PowerShell (Event ID 4688)**  
+  - Learn how attackers abuse PowerShell and how SOC analysts detect it  
+- **Folder**: [Project-02-PowerShell-Monitoring](./Project-02-PowerShell-Monitoring)
+
+---
+
 ## 🚀 Upcoming Projects
 Projects will gradually increase in difficulty:
 
-- **Project 02**: PowerShell Attack Simulation & Detection (Event ID 4104)  
 - **Project 03**: Brute Force Attack Detection (Multiple 4625 Events)  
 - **Project 04**: File Integrity Monitoring with Sysmon  
 - **Project 05**: Suspicious Network Connections (Event ID 5156 + Sysmon 3)  
