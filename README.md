@@ -45,4 +45,4 @@ Projects will gradually increase in difficulty:
 ---
 
 👨‍💻 Author: *Sadab Saiyed*  
-📌 Connect with me on [LinkedIn](https://www.linkedin.com)  
+📌 Connect with me on [LinkedIn](www.linkedin.com/in/saiyed-mohammadsadab-074ba8206)  
