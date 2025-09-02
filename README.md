@@ -27,31 +27,57 @@ Each project simulates real-world attack & defense scenarios and focuses on **lo
 
 ---
 
-## 🚀 Upcoming Projects
-Projects will gradually increase in difficulty:
+## Upcoming Projects
+🔑 Windows Log Analysis
 
-- **Project 03**: Brute Force Attack Detection (Multiple 4625 Events)  
-- **Project 04**: File Integrity Monitoring with Sysmon  
-- **Project 05**: Suspicious Network Connections (Event ID 5156 + Sysmon 3)  
-- **Project 06**: Detect Persistence Techniques (Registry + Scheduled Tasks)  
-- **Project 07**: SIEM Integration (ELK / Splunk / Wazuh)  
+- Project 03 – Brute Force Detection (Multiple 4625 → 4624)
 
----
+- Project 04 – File Integrity Monitoring with Sysmon
 
-## 🛠 Tools Used
-- **Windows Server 2016/2019**  
-- **PowerShell**  
-- **Event Viewer**  
-- (Later Projects) **Sysmon, Wazuh, ELK, Splunk, Wireshark**  
+- Project 05 – Suspicious Network Connections (5156 + Sysmon 3)
 
----
+- Project 06 – Detect Persistence Techniques (Registry + Scheduled Tasks)
 
-## 🎯 Purpose
-- Build **practical SOC skills** step by step.  
-- Showcase projects on **GitHub & LinkedIn** for recruiters.  
-- Create a **portfolio** demonstrating hands-on detection & analysis experience.  
+🐧 Linux Log Analysis
 
----
+- Project 07 – Linux Login Monitoring (/var/log/auth.log)
 
-👨‍💻 Author: *Sadab Saiyed*  
+- Project 08 – Linux Brute Force Simulation (Hydra → detect in logs)
+
+📊 Centralized Log Management
+
+- Project 09 – Windows Log Forwarding (to Loggly/Graylog)
+
+- Project 10 – Linux Log Forwarding with Rsyslog
+
+⚡ SIEM Basics
+
+- Project 11 – Splunk Basics (Ingest logs & detect failed logins)
+
+- Project 12 – Wazuh Basics (Windows/Linux log collection & alerts)
+
+- Project 13 – ELK Stack Monitoring (Collect & visualize login activity)
+
+🛠 Tools Used
+
+- Windows Server 2016/2019
+
+- Linux (Ubuntu/Kali)
+
+- PowerShell, Event Viewer
+
+- Sysmon, Rsyslog, Hydra
+
+- Splunk, Wazuh, ELK, Loggly/Graylog
+
+🎯 Purpose
+
+- Build practical SOC skills step by step
+
+- Showcase projects on GitHub & LinkedIn for recruiters
+
+- Create a portfolio demonstrating hands-on detection & analysis
+
+👨‍💻 Author: Sadab Saiyed
+
 📌 Connect with me on [LinkedIn](www.linkedin.com/in/saiyed-mohammadsadab-074ba8206)  
