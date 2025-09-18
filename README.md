@@ -27,10 +27,29 @@ Each project simulates real-world attack & defense scenarios and focuses on **lo
 
 ---
 
+### Project 03 — Brute Force Attack Detection
+
+- **Objective:** Detect brute-force login attempts in Windows Security Logs by monitoring repeated failed logon events (Event ID **4625**) within a short time window and flagging when these attempts lead to an account takeover (Event ID **4624**).
+- **Skills Gained:**
+
+  - Identify and interpret Windows authentication events (4625, 4624) at scale
+  - Build time-window correlation logic (e.g., `>=5` failures within `3` minutes)
+  - Produce structured alerts (JSON/CSV) with context: username, source IP, timestamps, and failure counts
+  - Create reproducible attack simulations and SOC playbook entries
+- **Folder:** [Project-03-Brute-Force-Detection](./Project-03-Brute-Force-Detection)
+
+**Quick usage (example):**
+
+```
+# run detection against exported CSV of security events
+python3 Project-03-Brute-Force-Detection/scripts/detect_bruteforce.py --input Project-03-Brute-Force-Detection/log_samples/security_events.csv --min-fails 5 --window-minutes 3
+```
+
+---
+
+
 ## Upcoming Projects
 🔑 Windows Log Analysis
-
-- Project 03 – Brute Force Detection (Multiple 4625 → 4624)
 
 - Project 04 – File Integrity Monitoring with Sysmon
 
