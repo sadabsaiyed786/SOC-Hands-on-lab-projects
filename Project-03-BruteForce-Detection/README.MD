@@ -1,137 +1,114 @@
-# Project 03 – Brute Force Attack Detection 🔐
+# Project 03 — Brute Force Attack Detection
 
-This project demonstrates detection of a brute-force login attempt using **Windows Security Logs**.  
-We simulate multiple failed logins (Event ID **4625**) followed by a successful login (Event ID **4624**).
+## ✅ Overview
 
----
+**Objective:** Detect brute-force login attempts in Windows Security Logs by monitoring repeated failed logon events (Event ID `4625`) within a short time window and identify when such attempts lead to a successful logon (Event ID `4624`).
 
-## 🔑 Objective
-- Simulate brute force attempts with multiple wrong passwords.
-- Detect the pattern of failed logins followed by a successful login.
-- Understand how SOC analysts investigate brute-force attacks in Windows logs.
+This hands-on lab demonstrates how to simulate brute-force attacks, collect Windows Security events, and implement a SOC-style detection that raises alerts when suspicious authentication patterns are observed.
 
 ---
 
-## 🛠 Lab Setup
-- Windows Server 2016 / 2019 (VM in VirtualBox/VMware)
-- PowerShell (run as Administrator)
-- Event Viewer → `Windows Logs > Security`
-- Test account: `bruteuser1`
+## 🔍 Skills Gained
+
+* Understand Windows Security Event IDs related to authentication (`4624`, `4625`).
+* Identify brute-force patterns: multiple `4625` events from the same source (user or IP) within a short time.
+* Correlate failed attempts with a subsequent `4624` successful login.
+* Write detection scripts (Python / PowerShell) to parse Event Log exports (`.evtx`/`.csv`) and produce alerts.
+* Create reproducible attack simulations and document findings for SOC playbooks.
 
 ---
 
-## 📜 Steps Performed
+## 📁 Repository Folder
 
-### 1️⃣ Create a test user
-```powershell
-net user bruteuser1 Brute@123 /add
+`Project-03-Brute-Force-Detection/`
 
-### 2️⃣ Enable auditing for logon events
-```powershell
-auditpol /set /subcategory:"Logon" /success:enable /failure:enable
-auditpol /set /subcategory:"Account Logon" /success:enable /failure:enable
+* `scripts/` — detection scripts (Python / PowerShell)
+* `log_samples/` — exported event logs (`.evtx`, `.csv`) used for testing
+* `screenshots/` — evidence and Event Viewer screenshots
+* `README.md` — this file
 
-### 3️⃣ Run brute-force simulation script
+---
 
-Save the scripts/bruteforce.ps1
+## 🚧 Lab Environment (recommended)
 
-Run the script:
+* Host: Windows Server 2016/2019 (Event logging target)
+* Attacker: Kali Linux or any machine capable of running brute-force tools (e.g., Hydra, Metasploit modules, custom scripts)
+* Virtualization: VirtualBox or VMware
 
-powershell.exe -ExecutionPolicy Bypass -File .\scripts\bruteforce.ps1
+> Use isolated lab networks. Do **not** perform brute-force testing on production systems or systems you do not own.
 
-📊 Expected Output
+---
 
-Wrong passwords → error 1326 (The user name or password is incorrect)
+## 🛠️ Detection Logic (high-level)
 
-Correct password → The command completed successfully. and Exit Code: 0
+1. Parse Windows Security logs and filter authentication events:
 
-🔍 Event Viewer Analysis
+   * `4625` — Failed logon
+   * `4624` — Successful logon
+2. Group events by username and source (IP or workstation name).
+3. For each group, look for `N` or more `4625` events within a rolling time window `T` (recommended: `N = 5`, `T = 3 minutes`).
+4. If a `4624` event occurs for the same username/source immediately after the failed attempts (within `T`), escalate to a higher-severity alert.
+5. Output an alert containing: username, source IP, timestamps, count of failed attempts, and the success event (if present).
 
-Open Event Viewer → Windows Logs → Security.
+---
 
-Click Filter Current Log... and enter Event IDs: 4625, 4624 then apply.
+## 💻 Example: Simple Python Detection (usage)
 
-Observe:
+Place a script in `scripts/` (e.g., `detect_bruteforce.py`) that accepts an exported CSV of Event Viewer logs and prints any detections.
 
-Multiple 4625 — Failed Logon events for bruteuser1 (short time window).
+**Example command:**
 
-A single 4624 — Successful Logon (when correct password used).
+```
+python3 scripts/detect_bruteforce.py --input log_samples/security_events.csv --min-fails 5 --window-minutes 3
+```
 
-Fields to inspect in 4625/4624 events:
+The script should output detections in a clear format (JSON lines or CSV) and save a `detections.json` to the repo for evidence.
 
-Account Name (should show bruteuser1)
+---
 
-Logon Type (e.g., 3 = Network, 2 = Interactive)
+## 🧾 Expected Artifacts
 
-Failure Information (Status/Substatus — helps identify bad password vs. locked account)
+* `detections.json` — structured alerts produced by the detection script
+* `log_samples/` — raw logs used to reproduce the detection
+* `screenshots/` — Event Viewer screenshots and script output screenshots
 
-Source Network Address / Workstation Name (if present)
+---
 
-📂 Project Structure
-Project-03-BruteForce-Detection/
-│── README.md
-│── scripts/
-│   └── bruteforce.ps1
-│── screenshots/
-│   ├── multiple_failed_logins.png
-│   └── successful_login.png
-│── log_samples/
-│   └── brute_force_logs.evtx
+## 🧪 Attack Simulation (brief)
 
-📌 Screenshots to Capture
+1. From attacker machine: run brute-force attempts against a test account on the Windows host.
+2. Monitor Event Viewer → Windows Logs → Security on the Windows host and export the relevant timeframe (.evtx or CSV).
+3. Run the detection script against the exported logs to verify detection.
 
-PowerShell console showing the brute-force loop output.
+---
 
-Event Viewer list showing multiple 4625 events (expand one to view details).
+## 📑 README Checklist (what to include)
 
-Event Viewer showing the 4624 success event details.
+* [ ] `scripts/detect_bruteforce.py` (or `detect_bruteforce.ps1`)
+* [ ] `log_samples/security_events.csv` or `.evtx`
+* [ ] `screenshots/eventviewer_fails.png`, `screenshots/detection_output.png`
+* [ ] `detections.json` demonstrating at least one successful detection
+* [ ] Short write-up of results and recommended remediation (account lockout, MFA, IP blocking)
 
-🗂 Exporting Evidence (.evtx)
+---
 
-GUI (recommended for filtered logs):
+## 🔐 Recommended Mitigations (short)
 
-After filtering (4625,4624): Right-click the filtered view → Save Filtered Log File As... → save as log_samples/brute_force_logs.evtx.
+* Enforce account lockout policies (threshold and cooldown)
+* Enable Multi-Factor Authentication (MFA)
+* Block or rate-limit suspicious source IPs
+* Monitor and alert on suspicious authentication patterns
 
-CLI (exports entire Security log):
+---
 
-wevtutil epl Security "Project-03-BruteForce-Detection\log_samples\brute_force_logs.evtx"
+## References / Notes
 
-🧾 Analysis & Findings (example)
+* Use only on lab/test environments.
+* Tweak thresholds (`N`, `T`) based on environment noise and acceptable false-positive rates.
 
-Observed multiple 4625 events for bruteuser1 within a short time period → consistent with automated credential guessing.
+---
 
-Observed a 4624 event after the failed attempts → brute-force succeeded.
-
-Recommended SOC actions:
-
-Block the attacker source (network/IP) if identified.
-
-Force password reset for the compromised account.
-
-Search for lateral movement and persistence (review 4688/other telemetry).
-
-Tune SIEM rules to alert on rapid consecutive 4625s for same account/source.
-
-⚙️ SOC Relevance
-
-Brute-force detection is fundamental for early threat detection.
-
-Typical detection rule: alert when count(4625) > X for same account or source IP within Y minutes.
-
-Correlate with endpoint (Sysmon 4688) and network logs for context and blocking decisions.
-
-✅ Deliverables
-
-scripts/bruteforce.ps1 — simulation script
-
-screenshots/multiple_failed_logins.png
-
-screenshots/successful_login.png
-
-log_samples/brute_force_logs.evtx — exported filtered logs
-
-README.md — this file
-
+*Created for the SOC Hands-On Lab Projects repository.*
 
 
 
