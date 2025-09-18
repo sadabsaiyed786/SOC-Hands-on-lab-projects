@@ -36,7 +36,7 @@ Each project simulates real-world attack & defense scenarios and focuses on **lo
   - Build time-window correlation logic (e.g., `>=5` failures within `3` minutes)
   - Produce structured alerts (JSON/CSV) with context: username, source IP, timestamps, and failure counts
   - Create reproducible attack simulations and SOC playbook entries
-- **Folder:** [Project-03-Brute-Force-Detection](./Project-03-Brute-Force-Detection)
+- **Folder:** [Project-03-Brute-Force-Detection](./Project-03-BruteForce-Detection)
 
 **Quick usage (example):**
 
