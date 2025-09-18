@@ -1,137 +1,126 @@
-Project 03 – Brute Force Attack Detection 🔐
-Objective
+# Project 03 – Brute Force Attack Detection 🔐
 
-Simulate a brute-force login scenario on a Windows machine and detect it using Windows Security logs (Event Viewer).
-This lab demonstrates how repeated failed logins (Event ID 4625) followed by a successful login (Event ID 4624) indicate a brute-force attack pattern.
+This project demonstrates detection of a brute-force login attempt using **Windows Security Logs**.  
+We simulate multiple failed logins (Event ID **4625**) followed by a successful login (Event ID **4624**).
 
-Lab Setup (requirements)
+---
 
-Windows Server 2016 / 2019 (VM)
+## 🔑 Objective
+- Simulate brute force attempts with multiple wrong passwords.
+- Detect the pattern of failed logins followed by a successful login.
+- Understand how SOC analysts investigate brute-force attacks in Windows logs.
 
-PowerShell (run as Administrator)
+---
 
-Event Viewer (Windows Logs → Security)
+## 🛠 Lab Setup
+- Windows Server 2016 / 2019 (VM in VirtualBox/VMware)
+- PowerShell (run as Administrator)
+- Event Viewer → `Windows Logs > Security`
+- Test account: `bruteuser1`
 
-(Optional) Shared folder between host and guest for transferring files/screenshots
+---
 
-Project Structure
+## 📜 Steps Performed
 
-Project-03-BruteForce-Detection/
-│── README.md
-│── scripts/
-│ └── bruteforce.ps1
-│── screenshots/
-│ ├── multiple_failed_logins.png
-│ └── successful_login.png
-│── log_samples/
-│ └── brute_force_logs.evtx
-
-Commands & Files used
-1) Create test user
-
-Run in elevated PowerShell:
-
+### 1️⃣ Create a test user
+```powershell
 net user bruteuser1 Brute@123 /add
 
-2) Enable auditing for logon events
-
-(Ensure failures are recorded)
-
+### 2️⃣ Enable auditing for logon events
+```powershell
 auditpol /set /subcategory:"Logon" /success:enable /failure:enable
 auditpol /set /subcategory:"Account Logon" /success:enable /failure:enable
 
-3) Bruteforce simulation script
+### 3️⃣ Run brute-force simulation script
 
-Save the following as scripts/bruteforce.ps1 and run it (Admin PowerShell):
+Save the scripts/bruteforce.ps1
 
-# bruteforce.ps1  - safe local brute-force simulation for lab
-$user = "bruteuser1"
-$target = "\\localhost\IPC$"
+Run the script:
 
-$passwords = @(
-  "pass123","12345","letmein","wrongpass","admin2020",
-  "Brute@123"  # correct password used in this lab
-)
+powershell.exe -ExecutionPolicy Bypass -File .\scripts\bruteforce.ps1
 
-foreach ($pwd in $passwords) {
-    Write-Host "======== Trying password: $pwd ========" -ForegroundColor Cyan
-    net use $target /user:$user $pwd
-    Write-Host "LASTEXITCODE = $LASTEXITCODE" -ForegroundColor Yellow
-    Start-Sleep -Milliseconds 700
-}
+📊 Expected Output
 
+Wrong passwords → error 1326 (The user name or password is incorrect)
 
-Run with ExecutionPolicy bypass if needed:
+Correct password → The command completed successfully. and Exit Code: 0
 
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\bruteforce.ps1"
-
-Expected PowerShell Output
-
-For wrong passwords:
-
-System error 1326 has occurred.
-The user name or password is incorrect.
-LASTEXITCODE = 1326
-
-
-For the correct password:
-
-The command completed successfully.
-LASTEXITCODE = 0
-
-Detecting in Event Viewer
+🔍 Event Viewer Analysis
 
 Open Event Viewer → Windows Logs → Security.
 
-Click Filter Current Log... and enter Event IDs: 4625,4624.
+Click Filter Current Log... and enter Event IDs: 4625, 4624 then apply.
 
-Apply filter — you should see multiple 4625 entries (failed logons) and one 4624 (successful logon).
+Observe:
 
-Important fields to inspect in a 4625 event:
+Multiple 4625 — Failed Logon events for bruteuser1 (short time window).
 
-Account Name → bruteuser1
+A single 4624 — Successful Logon (when correct password used).
 
-Failure Information → Status / Substatus (e.g., 0xC000006A = bad password)
+Fields to inspect in 4625/4624 events:
 
-Logon Type (e.g., 3 = Network)
+Account Name (should show bruteuser1)
+
+Logon Type (e.g., 3 = Network, 2 = Interactive)
+
+Failure Information (Status/Substatus — helps identify bad password vs. locked account)
 
 Source Network Address / Workstation Name (if present)
 
-Exporting evidence (.evtx)
+📂 Project Structure
+Project-03-BruteForce-Detection/
+│── README.md
+│── scripts/
+│   └── bruteforce.ps1
+│── screenshots/
+│   ├── multiple_failed_logins.png
+│   └── successful_login.png
+│── log_samples/
+│   └── brute_force_logs.evtx
+
+📌 Screenshots to Capture
+
+PowerShell console showing the brute-force loop output.
+
+Event Viewer list showing multiple 4625 events (expand one to view details).
+
+Event Viewer showing the 4624 success event details.
+
+🗂 Exporting Evidence (.evtx)
 
 GUI (recommended for filtered logs):
 
-With the filtered view (4625,4624) applied: Right-click → Save Filtered Log File As... and save to log_samples/brute_force_logs.evtx.
+After filtering (4625,4624): Right-click the filtered view → Save Filtered Log File As... → save as log_samples/brute_force_logs.evtx.
 
 CLI (exports entire Security log):
 
 wevtutil epl Security "Project-03-BruteForce-Detection\log_samples\brute_force_logs.evtx"
 
-Screenshots to capture (for repo & report)
+🧾 Analysis & Findings (example)
 
-screenshots/multiple_failed_logins.png — Event Viewer showing multiple 4625 entries (expand one to show details).
+Observed multiple 4625 events for bruteuser1 within a short time period → consistent with automated credential guessing.
 
-screenshots/successful_login.png — Event Viewer showing the 4624 successful login details.
+Observed a 4624 event after the failed attempts → brute-force succeeded.
 
-(Optional) PowerShell console screenshot showing the loop output.
+Recommended SOC actions:
 
-Analysis & Findings (example)
+Block the attacker source (network/IP) if identified.
 
-Observed multiple 4625 events for bruteuser1 in quick succession → indicates automated attempts.
+Force password reset for the compromised account.
 
-Observed 4624 for bruteuser1 after failures → brute-force success.
+Search for lateral movement and persistence (review 4688/other telemetry).
 
-Recommended SOC response: block source IP, reset credentials, investigate for lateral movement and persistence.
+Tune SIEM rules to alert on rapid consecutive 4625s for same account/source.
 
-SOC Relevance
+⚙️ SOC Relevance
 
-Brute-force detection is a core SOC use-case: alert on many 4625s from same account/source in a short time.
+Brute-force detection is fundamental for early threat detection.
 
-Correlate with firewall/IDS and host logs (process creation 4688, network connections) for full context.
+Typical detection rule: alert when count(4625) > X for same account or source IP within Y minutes.
 
-In SIEM, implement a rule like: alert when count(4625) > X within Y minutes for same username or source IP.
+Correlate with endpoint (Sysmon 4688) and network logs for context and blocking decisions.
 
-Deliverables
+✅ Deliverables
 
 scripts/bruteforce.ps1 — simulation script
 
@@ -143,47 +132,7 @@ log_samples/brute_force_logs.evtx — exported filtered logs
 
 README.md — this file
 
-Git Commands to Upload
-git add Project-03-BruteForce-Detection/
-git commit -m "Add Project 03 - Brute Force Detection (script, README, screenshots, logs)"
-git pull --rebase origin main
-git push origin main
 
 
-(If push is rejected, run git pull --rebase origin main, resolve conflicts, then git push origin main.)
-
-Troubleshooting (if you don’t see events)
-
-Ensure PowerShell was run as Administrator.
-
-Verify the test user exists:
-
-net user bruteuser1
 
 
-Check auditing settings:
-
-auditpol /get /category:"Logon/Logoff"
-
-
-If failures are not enabled, enable them (see section above).
-
-Test a single manual authentication:
-
-net use \\localhost\IPC$ /user:bruteuser1 wrongpass
-
-
-You should see System error 1326 on failure which corresponds to a 4625 log entry.
-
-Extensions / Next steps
-
-Re-run test using a separate attacker VM (Kali) with tools like hydra for SMB/RDP brute force — capture network traffic (Wireshark) and host logs.
-
-Forward logs to SIEM (Splunk/Wazuh/ELK) and create correlation rules/dashboards for brute-force detection.
-
-Add Sysmon for enhanced telemetry (process creation, network connection events) and correlate with Security logs.
-
-Author
-
-Sadab Saiyed
-LinkedIn: https://www.linkedin.com/in/saiyed-mohammadsadab-074ba8206
