@@ -62,6 +62,10 @@ python3 Project-03-Brute-Force-Detection/scripts/detect_bruteforce.py --input Pr
 ```powershell
 cd C:\Tools\Sysmon
 .\sysmon64.exe -i sysmonconfig-export.xml -accepteula
+```
+
+
+---
 
 
 
