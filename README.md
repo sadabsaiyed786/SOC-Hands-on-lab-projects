@@ -47,11 +47,26 @@ python3 Project-03-Brute-Force-Detection/scripts/detect_bruteforce.py --input Pr
 
 ---
 
+### ✅ Project 04 – File Integrity Monitoring with Sysmon
+- **Objective**: Set up Sysmon with the SwiftOnSecurity configuration to monitor and detect file creation events.  
+- **Skills Gained**:
+  - Install and configure Sysmon with community rules
+  - Detect file creation events (Event ID 11)
+  - Analyze logs for suspicious activity
+  - Build foundation for SIEM rules later
+- **Folder**: [Project-04-File-Integrity-Monitoring](./Project-04-File-Integrity-Monitoring)
+
+**Quick usage (example):**
+
+1. Install Sysmon with the SwiftOnSecurity config:
+```powershell
+cd C:\Tools\Sysmon
+.\sysmon64.exe -i sysmonconfig-export.xml -accepteula
+
+
 
 ## Upcoming Projects
 🔑 Windows Log Analysis
-
-- Project 04 – File Integrity Monitoring with Sysmon
 
 - Project 05 – Suspicious Network Connections (5156 + Sysmon 3)
 
